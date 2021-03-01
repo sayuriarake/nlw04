@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { getCustomRepository } from "typeorm";
 import { stringify } from "uuid";
+import { AppError } from '../errors/AppError';
 import { SurveyUsersRepository } from "../repositories/SurveyUsersRepository";
 
 class AnswerController{
@@ -15,10 +16,7 @@ class AnswerController{
         });
 
         if(!surveyUser){
-            return response.status(400).json({
-                error: "Pesquisa do usuário não existe!"
-            })
-
+            throw new AppError("Pesquisa do usuário não existe!");
         }
 
         surveyUser.value = Number(value);

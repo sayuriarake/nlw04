@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { getCustomRepository } from 'typeorm';
 import { UsersRepository } from '../repositories/UsersRepository';
 import * as yup from 'yup'
+import { AppError } from '../errors/AppError';
 
 class UserController {
     async create(request: Request, response: Response){
@@ -15,13 +16,12 @@ class UserController {
         try{
             await schema.validate(request.body, {abortEarly: false});
         } catch (err){
-            return response.status(400).json({ error: err });
+            throw new AppError(err)
         }
 
         if(!(await schema.isValid(request.body))){
-            return response.status(400).json({
-                error: "Erro de validação"
-            })
+            throw new AppError("Erro de validação");
+        
         }
 
         const usersRepository = getCustomRepository(UsersRepository);
@@ -32,10 +32,7 @@ class UserController {
         });
 
         if(userAlreadyExists){
-            return response.status(400).json({
-                error: "E-mail já cadastrado!",
-                
-            })
+            throw new AppError("E-mail já cadastrado!");           
         }
 
         const user = usersRepository.create({
